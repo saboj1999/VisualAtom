@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebGL Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    
+    <!��----------------->
+    <!�� Vertex Shader ��>
+    <!��----------------->
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    #version 300 es
+
+    in vec3 vPosition;
+    uniform mat4 P;    // 2D Orthographic Projection matrix
+    uniform mat4 V;    // Camera Matrix
+    uniform mat4 MV;   // ModelView matrix
+
+    void
+    main()
+    {
+    gl_Position = P * V * MV * vec4(vPosition, 1);
+    }
+    </script>
+
+    <!��------------------->
+    <!�� Fragment Shader ��>
+    <!��------------------->
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+    #version 300 es
+    precision mediump float;
+
+    uniform vec4 color; // Declare a uniform variable in fragment shader
+    out vec4 fColor;
+
+    void
+    main()
+    {
+        fColor = vec4(color);
+    }
+    </script>
+
+    <!��----------------->
+    <!�� Directional Lighting Vertex Shader ��>
+    <!��----------------->
+
+    <script id="dl-vertex-shader" type="x-shader/x-vertex">
+    #version 300 es
+    in vec3 vPosition;
+    in vec3 vNormal;
+    
+    uniform mat4 P;
+    uniform mat4 MV;
+    uniform mat4 V;
+    uniform mat3 N;
+    
+    out vec3 v_position;
+    out vec3 v_normal;
+    out highp vec3 vLighting;
+    
+    void main() {
+        // Multiply the position by the matrix.
+        gl_Position = P * V * MV * vec4(vPosition, 1);
+
+        v_position = vPosition.xyz;
+    
+        // Pass the normal to the fragment shader
+        v_normal = N * vNormal + (MV * vec4(vPosition, 1)).xyz;
+        v_normal = normalize(v_normal);
+        
+        highp vec3 ambientLight = vec3(0.2, 0.2, 0.2);
+        
+        highp vec3 directionalLightColor = vec3(1, 1, 1);
+        
+        highp vec3 directionalVector = normalize(vec3(1, 1, 1));
+
+        highp float directional = max(dot(v_normal, directionalVector), 0.0);
+
+        vLighting = ambientLight + (directionalLightColor * directional);
+
+        //directionalVector = normalize(vec3(-1, 1, -1));
+
+        //directional = max(dot(v_normal, directionalVector), 0.0);
+        
+        //vLighting +=(directionalLightColor * directional);
+
+        //v_normal = N * (MV * vec4(vNormal, 1)).xyz;
+
+
+    }
+    </script>
+
+    <!��------------------->
+    <!�� Directional Lighting Fragment Shader ��>
+    <!��------------------->
+
+    <script id="dl-fragment-shader" type="x-shader/x-fragment">
+    #version 300 es
+    precision mediump float;
+
+    // Passed in from the vertex shader.
+    in vec3 v_position;
+    in vec3 v_normal;
+    in highp vec3 vLighting;
+
+    uniform vec4 color;
+
+    out vec4 fColor;
+
+    void main() {
+    // because v_normal is a varying it's interpolated
+    // so it will not be a unit vector. Normalizing it
+    // will make it a unit vector again
+    // vec3 normal = normalize(v_normal);
+
+    // float light = dot(normal, reverseLightDirection);
+
+    //fColor = vec4(v_normal, 1);
+    fColor = color;
+    //fColor = vec4(v_position.x, v_position.y, v_position.z, 1);
+
+    // Lets multiply just the color portion (not the alpha)
+    // by the light
+    
+    //fColor.rgb *= vLighting;
+
+    }
+    </script>  
+
+    <!��------------------->
+    <!��     JS Files    ��>
+    <!��------------------->
+
+    <script src="./libs/initShaders.js" defer></script>
+    <script src="./libs/MVnew.js" defer></script>
+    <script src="./libs/Vbo.js" defer></script>
+    <script src="./objects/object.js" defer></script>
+    <script src="./objects/cube.js" defer></script>
+    <script src="./objects/sphere.js" defer></script>
+    <script src="./objects/camera.js" defer></script>
+    <script src="./objects/plane.js" defer></script>
+    <script src="main.js" defer></script>
+</head>
+<body>
+    <canvas id="canvas" width="1440" height="816">
+    </canvas>
+</body>
+</html>
